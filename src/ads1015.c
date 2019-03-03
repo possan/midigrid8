@@ -3,6 +3,7 @@
 
 #include "arduino_twi.h"
 
+// Datasheet http://www.ti.com/lit/ds/symlink/ads1015.pdf
 // ADS1015 Constants from https://github.com/adafruit/Adafruit_ADS1X15
 
 #define ADS1015_ADDRESS                 (0x48)    // 1001 000 (ADDR = GND)
@@ -109,8 +110,8 @@ void ads1015_prepare(int index, int channel) {
     ads1015_stopi2c();
 }
 
-int ads1015_read(int index) {
-    uint16_t value  = 0;
+int16_t ads1015_read(int index) {
+    int16_t value = -1;
     unsigned char data1[2] = { ADS1015_REG_POINTER_CONVERT, 0 };
     unsigned char data2[3] = { 0, 0, 0 };
 
@@ -119,9 +120,10 @@ int ads1015_read(int index) {
     int ret = twi_writeTo(ADS1015_ADDRESS + index, &data1, 1, true, false);
     if (ret == 0) {
         ret = twi_readFrom(ADS1015_ADDRESS + index, &data2, 2, true);
-        value = data2[0] << 8;
-        value += data2[1];
-        value >>= 4;
+        if (ret == 2) {
+            uint16_t rawvalue = (data2[0] << 8) + data2[1];
+            value = rawvalue >> 4; // first four bits are always empty
+        }
     }
 
     ads1015_stopi2c();

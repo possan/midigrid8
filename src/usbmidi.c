@@ -52,6 +52,8 @@ void EVENT_USB_Device_ControlRequest(void)
 
 
 
+// int needs_flush = 0;
+
 void usbmidi_init()
 {
 	MCUSR &= ~(1 << WDRF);
@@ -63,6 +65,13 @@ void usbmidi_init()
 
 void usbmidi_tick()
 {
+	// if (needs_flush) {
+	// 	int ret = MIDI_Device_Flush(&Keyboard_MIDI_Interface);
+	// 	if (ret == ENDPOINT_READYWAIT_NoError) {
+	// 		needs_flush = 0;
+	// 	}
+	// }
+
 	MIDI_EventPacket_t ReceivedMIDIEvent;
 	while (MIDI_Device_ReceiveEventPacket(&Keyboard_MIDI_Interface, &ReceivedMIDIEvent))
 	{
@@ -73,20 +82,28 @@ void usbmidi_tick()
 	}
 
 	MIDI_Device_USBTask(&Keyboard_MIDI_Interface);
+
 	USB_USBTask();
 }
 
-void usbmidi_sendcontrolchange(int channel, int controller, int value)
+int usbmidi_sendcontrolchange(unsigned char channel, unsigned char controller, unsigned char value)
 {
 	uint8_t MIDICommand = MIDI_COMMAND_CONTROL_CHANGE;
 	uint8_t Channel = MIDI_CHANNEL(channel);
-	MIDI_EventPacket_t MIDIEvent = (MIDI_EventPacket_t)
-		{
-			.Event       = MIDI_EVENT(0, MIDICommand),
-			.Data1       = MIDICommand | Channel,
-			.Data2       = controller,
-			.Data3       = value,
-		};
-	MIDI_Device_SendEventPacket(&Keyboard_MIDI_Interface, &MIDIEvent);
-	MIDI_Device_Flush(&Keyboard_MIDI_Interface);
+
+	MIDI_EventPacket_t MIDIEvent = (MIDI_EventPacket_t) {
+		.Event       = MIDI_EVENT(0, MIDICommand),
+		.Data1       = MIDICommand | Channel,
+		.Data2       = controller,
+		.Data3       = value,
+	};
+
+	int ret = MIDI_Device_SendEventPacket(&Keyboard_MIDI_Interface, &MIDIEvent);
+
+	if (ret == ENDPOINT_RWSTREAM_NoError) {
+		// needs_flush = 1;
+		return 1;
+	}
+
+	return 0;
 }

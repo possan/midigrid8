@@ -3,6 +3,6 @@
 
 void usbmidi_init();
 void usbmidi_tick();
-void usbmidi_sendcontrolchange(int channel, int controller, int value);
+int usbmidi_sendcontrolchange(unsigned char channel, unsigned char controller, unsigned char value);
 
 #endif

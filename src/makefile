@@ -6,13 +6,13 @@ F_CPU        = 16000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = MIDIGRID8
-SRC          = main.c usbmidi.c Descriptors.c arduino_twi.c midistate.c ads1015.c inputmux.c scanner.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS) $(LUFA_SRC_TWI)
+SRC          = main.c usbmidi.c Descriptors.c arduino_twi.c midistate.c ads1015.c inputmux.c scanner.c bankui.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS) $(LUFA_SRC_TWI)
 LUFA_PATH    = ../../lufa/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER
 LD_FLAGS     =
 
 AVRDUDE_PROGRAMMER  ?= avr109
-AVRDUDE_PORT        ?= /dev/cu.usbmodem14401
+AVRDUDE_PORT        ?= /dev/cu.usbmodem14601
 
 # Default target
 all:
